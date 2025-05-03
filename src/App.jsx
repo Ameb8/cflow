@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef } from 'react';
 import Editor from "@monaco-editor/react";
 import axios from 'axios';
 import './App.css'
@@ -9,6 +9,12 @@ function App() {
     const [preprocessed, setPreprocessed] = useState(''); // New state for preprocessed code
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [lineMapping, setLineMapping] = useState({});
+    const lineMappingRef = useRef({});
+
+    const asmEditorRef = useRef(null);
+    const cEditorRef = useRef(null);
+    const asmDecorationsRef = useRef([]);
 
     // Load from localStorage on first render
     useEffect(() => {
@@ -27,10 +33,43 @@ function App() {
             setAsm(response.data.assembly);
             localStorage.setItem('asm_output', response.data.assembly);
             setPreprocessed(response.data.preprocessed);
+            setLineMapping(response.data.line_mapping);
+            lineMappingRef.current = response.data.line_mapping;
+            console.log("data: ", response.data.line_mapping); // DEBUG ***
         } catch (err) {
             setError("Compilation failed. Please check your code.");
         }
         setLoading(false);
+    };
+
+    const handleCEditorMount = (editor) => {
+        cEditorRef.current = editor;
+
+        editor.onDidChangeCursorPosition((e) => {
+            const currentLine = e.position.lineNumber.toString();
+            console.log("Current C code line:", currentLine); // DEBUG ***
+            const asmLines = lineMappingRef.current[currentLine];
+            console.log("Mapped ASM lines:", asmLines); // DEBUG ***
+
+            if (asmEditorRef.current) {
+                // Clear previous decorations
+                asmDecorationsRef.current = asmEditorRef.current.deltaDecorations(
+                    asmDecorationsRef.current,
+                    asmLines ? asmLines.map(line => ({
+                        range: {
+                            startLineNumber: line,
+                            endLineNumber: line,
+                            startColumn: 1,
+                            endColumn: 1
+                        },
+                        options: {
+                            isWholeLine: true,
+                            className: 'highlight-line'
+                        }
+                    })) : []
+                );
+            }
+        });
     };
 
     return (
@@ -41,6 +80,7 @@ function App() {
                     className="editor"
                     height="300px"
                     defaultLanguage="c"
+                    onMount={handleCEditorMount}
                     value={code}
                     onChange={(value) => {
                         setCode(value);
@@ -53,6 +93,7 @@ function App() {
                     defaultLanguage="cpp"
                     value={asm}
                     options={{ readOnly: true }}
+                    onMount={(editor) => asmEditorRef.current = editor}
                 />
             </div>
             <button className="compile-button" onClick={handleCompile} disabled={loading}>
@@ -69,63 +110,3 @@ function App() {
 
 export default App;
 
-
-
-/*
-
-function App() {
-    const [code, setCode] = useState(`#include <stdio.h>\nint main() {\n  return 0;\n}`);
-    const [asm, setAsm] = useState('');
-    const [preprocessed, setPreprocessed] = useState(''); // New state for preprocessed code
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleCompile = async () => {
-        console.log("Button clicked"); // DEBUG
-
-        setLoading(true);
-        setError('');
-        try {
-            const response = await axios.post('http://127.0.0.1:8000/api/compile/', { code });
-            console.log("Response:", response); // DEBUG
-            setAsm(response.data.assembly);
-            setPreprocessed(response.data.preprocessed); // Capture preprocessed code
-        } catch (err) {
-            setError("Compilation failed. Please check your code.");
-        }
-        setLoading(false);
-    };
-
-    return (
-        <div className="container">
-            <h1 className="title">CFlow</h1>
-            <div className="editor-container">
-                <Editor
-                    className="editor"
-                    height="300px"
-                    defaultLanguage="c"
-                    value={code}
-                    onChange={(value) => setCode(value)}
-                />
-                <Editor
-                    className="editor"
-                    height="300px"
-                    defaultLanguage="cpp"
-                    value={asm}
-                    options={{ readOnly: true }}
-                />
-            </div>
-            <button className="compile-button" onClick={handleCompile} disabled={loading}>
-                {loading ? "Compiling..." : "Compile"}
-            </button>
-            {error && <p className="error">{error}</p>}
-            <h2 className="subtitle">Assembly Output:</h2>
-            <pre className="output">{asm}</pre>
-            <h2 className="subtitle">Preprocessed Code:</h2> {/* Display Preprocessed Code *}
-<pre className="output">{preprocessed}</pre> {/* Display preprocessed content *}
-</div>
-);
-}
-
-export default App;
- */
