@@ -1,0 +1,71 @@
+/* App.css */
+
+body {
+  margin: 0;
+  background-color: #f9f9f9;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.editor {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.compile-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.compile-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.compile-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d9534f;
+  margin-top: 0.5rem;
+}
+
+.subtitle {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.output {
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.95rem;
+  overflow-x: auto;
+}
+
