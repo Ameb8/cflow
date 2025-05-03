@@ -69,3 +69,13 @@ body {
   overflow-x: auto;
 }
 
+
+.editor-container {
+  display: flex;
+  gap: 1rem;
+}
+
+.editor-container .editor {
+  flex: 1;
+}
+
