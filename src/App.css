@@ -82,3 +82,22 @@ body {
 .highlight-line {
   background-color: rgba(255, 255, 0, 0.3); /* light yellow */
 }
+
+.error-output {
+  background-color: #2e2e2e;
+  color: #ff5555;
+  padding: 1em;
+  border-radius: 8px;
+  margin-top: 1em;
+  white-space: pre-wrap;
+}
+
+
+.warning-output {
+  background-color: #2e2e2e;
+  color: #ffa500;
+  padding: 1em;
+  border-radius: 8px;
+  margin-top: 1em;
+  white-space: pre-wrap;
+}

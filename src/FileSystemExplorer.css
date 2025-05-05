@@ -1,0 +1,42 @@
+.filesystem {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 1rem;
+    max-width: 600px;
+    margin: auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.folder {
+    margin-left: 1rem;
+}
+
+.folder-name {
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0.25rem 0;
+    transition: color 0.2s ease;
+}
+
+.folder-name:hover {
+    color: #0056b3;
+}
+
+.folder-contents {
+    margin-left: 1rem;
+    border-left: 2px solid #ccc;
+    padding-left: 0.5rem;
+}
+
+.file {
+    margin-left: 1.5rem;
+    color: #333;
+}
+
+.folder-name.selected {
+    background-color: #d0ebff;
+    color: #004085;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
