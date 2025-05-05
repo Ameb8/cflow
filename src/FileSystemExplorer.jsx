@@ -13,12 +13,12 @@ const File = ({ file_name, extension }) => {
 };
 
 
-const Folder = ({ folder, selectedFolder, setSelectedFolder }) => {
+const Folder = ({ folder, selectedFolder, onFolderSelect }) => {
     const [expanded, setExpanded] = useState(false);
 
     const toggle = () => {
         setExpanded(!expanded);
-        setSelectedFolder(folder);
+        onFolderSelect(folder);
     };
 
     const isSelected = selectedFolder?.id === folder.id;
@@ -41,7 +41,7 @@ const Folder = ({ folder, selectedFolder, setSelectedFolder }) => {
                             key={sub.id || idx}
                             folder={sub}
                             selectedFolder={selectedFolder}
-                            setSelectedFolder={setSelectedFolder}
+                            onFolderSelect={onFolderSelect}
                         />
                     ))}
                 </div>
@@ -50,10 +50,10 @@ const Folder = ({ folder, selectedFolder, setSelectedFolder }) => {
     );
 };
 
-const FileSystemExplorer = () => {
+const FileSystemExplorer = ({ selectedFolder, onFolderSelect, refreshTrigger }) => {
     const { user } = useAuth();
     const [filesystem, setFilesystem] = useState([]);
-    const [selectedFolder, setSelectedFolder] = useState(null);
+    //const [selectedFolder, setSelectedFolder] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,7 +69,7 @@ const FileSystemExplorer = () => {
         if (user) {
             fetchData();
         }
-    }, [user]);
+    }, [user, refreshTrigger]);
 
     return (
         <div className="filesystem">
@@ -78,7 +78,7 @@ const FileSystemExplorer = () => {
                     key={folder.id || idx}
                     folder={folder}
                     selectedFolder={selectedFolder}
-                    setSelectedFolder={setSelectedFolder}
+                    onFolderSelect={onFolderSelect}
                 />
             ))}
         </div>
