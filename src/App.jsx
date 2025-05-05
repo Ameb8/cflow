@@ -5,6 +5,7 @@ import './App.css'
 import Navbar from './Navbar'
 import FileSystemExplorer from "./FileSystemExplorer.jsx";
 import { useAuth } from './AuthContext.jsx';
+import SaveFile from "./SaveFile.jsx";
 
 
 function App() {
@@ -16,11 +17,19 @@ function App() {
     const [lineMapping, setLineMapping] = useState({});
     const [warnings, setWarnings] = useState('');
     const lineMappingRef = useRef({});
+    const [selectedFolder, setSelectedFolder] = useState(null);
+    const [refreshFilesystem, setRefreshFilesystem] = useState(false);
+    const [fileName, setFileName] = useState('');
 
     const asmEditorRef = useRef(null);
     const cEditorRef = useRef(null);
     const asmDecorationsRef = useRef([]);
     const { user } = useAuth();
+
+    const handleSaveNotification = () => {
+        console.log("Code was saved!");
+        setRefreshFilesystem(prev => !prev);
+    };
 
     // Load from localStorage on first render
     useEffect(() => {
@@ -86,6 +95,14 @@ function App() {
         <div className="container">
             <Navbar />
             <h1 className="title">CFlow</h1>
+            <div className="filename-input">
+                <input
+                    type="text"
+                    placeholder="Enter file name"
+                    value={fileName}
+                    onChange={(e) => setFileName(e.target.value)}
+                />
+            </div>
             <div className="editor-container">
                 <Editor
                     className="editor"
@@ -110,6 +127,12 @@ function App() {
             <button className="compile-button" onClick={handleCompile} disabled={loading}>
                 {loading ? "Compiling..." : "Compile"}
             </button>
+            <SaveFile
+                selectedFolder={selectedFolder}
+                code={code}
+                fileName={fileName}
+                handleSaveNotification={handleSaveNotification}
+            />
             {warnings && (
                 <div className="warning-output">
                     <h3 className="subtitle">Compiler Warnings:</h3>
@@ -122,7 +145,11 @@ function App() {
                     <pre className="output">{error}</pre>
                 </div>
             )}
-            {user && <FileSystemExplorer />}
+            {user && <FileSystemExplorer
+                selectedFolder={selectedFolder}
+                onFolderSelect={setSelectedFolder}
+                refreshTrigger={refreshFilesystem}
+            />}
             <h2 className="subtitle">Assembly Output:</h2>
             <pre className="output">{asm}</pre>
             <h2 className="subtitle">Preprocessed Code:</h2>
