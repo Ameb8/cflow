@@ -18,7 +18,7 @@ const SaveFile = ({ selectedFolder, code, fileName, handleSaveNotification }) =>
                 folder: selectedFolder.id,
                 "file_name": fileName,
                 "extension": "c",
-                code,
+                "file_content": code,
             });
             alert("Code saved successfully!");
             handleSaveNotification();

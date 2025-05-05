@@ -6,6 +6,7 @@ import Navbar from './Navbar'
 import FileSystemExplorer from "./FileSystemExplorer.jsx";
 import { useAuth } from './AuthContext.jsx';
 import SaveFile from "./SaveFile.jsx";
+import csrfAxios from "./csrfAxios.js";
 
 
 function App() {
@@ -30,6 +31,25 @@ function App() {
         console.log("Code was saved!");
         setRefreshFilesystem(prev => !prev);
     };
+
+    // Load saved file to editor when clicked
+    const handleFileDoubleClick = async (fileData) => {
+        console.log("Double-clicked file:", fileData);
+
+        try {
+            const response = await csrfAxios.get(`/api/files/${fileData.id}/`);
+
+            console.log("File details fetched:", response.data); // DEBUG ***
+
+            // Load file data into editor
+            setCode(response.data.file_content || '');
+            setFileName(response.data.file_name);
+        } catch (err) {
+            console.error("Error fetching file details:", err);
+            setError("Failed to load file. Please try again.");
+        }
+    };
+
 
     // Load from localStorage on first render
     useEffect(() => {
@@ -149,6 +169,7 @@ function App() {
                 selectedFolder={selectedFolder}
                 onFolderSelect={setSelectedFolder}
                 refreshTrigger={refreshFilesystem}
+                onFileDoubleClick={handleFileDoubleClick}
             />}
             <h2 className="subtitle">Assembly Output:</h2>
             <pre className="output">{asm}</pre>
