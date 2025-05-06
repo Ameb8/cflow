@@ -21,6 +21,7 @@ function App() {
     const [selectedFolder, setSelectedFolder] = useState(null);
     const [refreshFilesystem, setRefreshFilesystem] = useState(false);
     const [fileName, setFileName] = useState('');
+    const [selectedTab, setSelectedTab] = useState(0);
 
     const asmEditorRef = useRef(null);
     const cEditorRef = useRef(null);
@@ -31,6 +32,14 @@ function App() {
         console.log("Code was saved!");
         setRefreshFilesystem(prev => !prev);
     };
+
+    useEffect(() => {
+        const savedCode = localStorage.getItem('c_code');
+        const savedAsm = localStorage.getItem('asm_output');
+        if (savedCode) setCode(savedCode);
+        else setCode(`#include <stdio.h>\nint main() {\n  return 0;\n}`);
+        if (savedAsm) setAsm(savedAsm);
+    }, []);
 
     // Load saved file to editor when clicked
     const handleFileDoubleClick = async (fileData) => {
@@ -65,12 +74,19 @@ function App() {
         setError('');
         try {
             const response = await axios.post('http://127.0.0.1:8000/api/compile/', { code });
-            setAsm(response.data.assembly);
-            localStorage.setItem('asm_output', response.data.assembly);
+            const allAssemblies = response.data.assembly;
+            const allLineMappings = response.data.line_mapping;
+
+            localStorage.setItem('asm_output', JSON.stringify(allAssemblies)); // Store all assemblies
+            setAsm(allAssemblies[0]); // Set ASM for the first tab initially
+
             setPreprocessed(response.data.preprocessed);
-            setLineMapping(response.data.line_mapping);
-            lineMappingRef.current = response.data.line_mapping;
-            console.log("data: ", response.data.line_mapping); // DEBUG ***
+            setLineMapping(allLineMappings[0]);
+            lineMappingRef.current = allLineMappings[0];
+
+            console.log("data: ", allLineMappings); // DEBUG ***
+            console.log("ASM FILES:", allAssemblies); // DEBUG ***
+
             setWarnings(response.data.warnings || '');
             console.log("'-Wall' Warnings: ", response.data.warnings);
         } catch (err) {
@@ -80,6 +96,7 @@ function App() {
         }
         setLoading(false);
     };
+
 
     const handleCEditorMount = (editor) => {
         cEditorRef.current = editor;
@@ -111,6 +128,15 @@ function App() {
         });
     };
 
+    const handleTabChange = (index) => {
+        setSelectedTab(index);
+        const allAssemblies = JSON.parse(localStorage.getItem('asm_output'));
+        if (allAssemblies && allAssemblies[index]) {
+            setAsm(allAssemblies[index]); // Update ASM content for the selected tab
+        }
+    };
+
+
     return (
         <div className="container">
             <Navbar />
@@ -135,6 +161,19 @@ function App() {
                         localStorage.setItem('c_code', value);
                     }}
                 />
+                <div className="asm-tabs">
+                    <div className="tabs">
+                        {[0, 1, 2, 3].map((index) => (
+                            <button
+                                key={index}
+                                className={selectedTab === index ? 'tab-selected' : 'tab'}
+                                onClick={() => handleTabChange(index)}
+                            >
+                                Tab {index + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <Editor
                     className="editor"
                     height="300px"
@@ -180,4 +219,3 @@ function App() {
 }
 
 export default App;
-
