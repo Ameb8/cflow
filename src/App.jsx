@@ -6,9 +6,9 @@ import { EditorSection } from './components/EditorSection';
 import { TabButtons } from './components/TabButtons';
 import { WarningOutput } from './components/WarningOutput';
 import { ErrorOutput } from './components/ErrorOutput';
-import Navbar from '../components/Navbar.jsx';
-import FileSystemExplorer from '../components/FileSystemExplorer.jsx';
-import SaveFile from '../components/SaveFile.jsx';
+import Navbar from './components/Navbar.jsx';
+import FileSystemExplorer from './components/FileSystemExplorer.jsx';
+import SaveFile from './components/SaveFile.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import Editor from "@monaco-editor/react";
 import "./App.css"
