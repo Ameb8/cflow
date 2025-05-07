@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../src/context/AuthContext.jsx";
 
 export default function Navbar() {
     const { user, login, register, logout } = useAuth();

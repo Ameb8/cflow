@@ -1,114 +1,81 @@
-import { useState, useEffect , useRef } from 'react';
+import { useState, useRef } from 'react';
+import { useEditorSync } from './hooks/useEditorSync';
+import { compileCode } from './utils/compileCode';
+import { loadSavedFile } from './utils/loadSavedFile';
+import { EditorSection } from './components/EditorSection';
+import { TabButtons } from './components/TabButtons';
+import { WarningOutput } from './components/WarningOutput';
+import { ErrorOutput } from './components/ErrorOutput';
+import Navbar from '../components/Navbar.jsx';
+import FileSystemExplorer from '../components/FileSystemExplorer.jsx';
+import SaveFile from '../components/SaveFile.jsx';
+import { useAuth } from './context/AuthContext.jsx';
 import Editor from "@monaco-editor/react";
-import axios from 'axios';
-import './App.css'
-import Navbar from './Navbar'
-import FileSystemExplorer from "./FileSystemExplorer.jsx";
-import { useAuth } from './AuthContext.jsx';
-import SaveFile from "./SaveFile.jsx";
-import csrfAxios from "./csrfAxios.js";
+import "./App.css"
 
-
-function App() {
-    const [code, setCode] = useState(`#include <stdio.h>\nint main() {\n  return 0;\n}`);
+export default function App() {
+    const [code, setCode] = useState('');
     const [asm, setAsm] = useState('');
-    const [preprocessed, setPreprocessed] = useState(''); // New state for preprocessed code
-    const [loading, setLoading] = useState(false);
+    const [preprocessed, setPreprocessed] = useState('');
     const [error, setError] = useState('');
-    const [lineMapping, setLineMapping] = useState({});
     const [warnings, setWarnings] = useState('');
-    const lineMappingRef = useRef({});
-    const [selectedFolder, setSelectedFolder] = useState(null);
-    const [refreshFilesystem, setRefreshFilesystem] = useState(false);
     const [fileName, setFileName] = useState('');
     const [selectedTab, setSelectedTab] = useState(0);
+    const [selectedFolder, setSelectedFolder] = useState(null);
+    const [refreshFilesystem, setRefreshFilesystem] = useState(false);
 
-    const asmEditorRef = useRef(null);
+    const lineMappingRef = useRef({});
     const cEditorRef = useRef(null);
+    const asmEditorRef = useRef(null);
     const asmDecorationsRef = useRef([]);
     const { user } = useAuth();
 
-    const handleSaveNotification = () => {
-        console.log("Code was saved!");
-        setRefreshFilesystem(prev => !prev);
-    };
-
-    useEffect(() => {
-        const savedCode = localStorage.getItem('c_code');
-        const savedAsm = localStorage.getItem('asm_output');
-        if (savedCode) setCode(savedCode);
-        else setCode(`#include <stdio.h>\nint main() {\n  return 0;\n}`);
-        if (savedAsm) setAsm(savedAsm);
-    }, []);
-
-    // Load saved file to editor when clicked
-    const handleFileDoubleClick = async (fileData) => {
-        console.log("Double-clicked file:", fileData);
-
-        try {
-            const response = await csrfAxios.get(`/api/files/${fileData.id}/`);
-
-            console.log("File details fetched:", response.data); // DEBUG ***
-
-            // Load file data into editor
-            setCode(response.data.file_content || '');
-            setFileName(response.data.file_name);
-        } catch (err) {
-            console.error("Error fetching file details:", err);
-            setError("Failed to load file. Please try again.");
-        }
-    };
-
-
-    // Load from localStorage on first render
-    useEffect(() => {
-        const savedCode = localStorage.getItem('c_code');
-        const savedAsm = localStorage.getItem('asm_output');
-        if (savedCode) setCode(savedCode);
-        else setCode(`#include <stdio.h>\nint main() {\n  return 0;\n}`);
-        if (savedAsm) setAsm(savedAsm);
-    }, []);
+    useEditorSync(setCode, setAsm);
 
     const handleCompile = async () => {
-        setLoading(true);
-        setError('');
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/compile/', { code });
-            const allAssemblies = response.data.assembly;
-            const allLineMappings = response.data.line_mapping;
-
-            localStorage.setItem('asm_output', JSON.stringify(allAssemblies)); // Store all assemblies
-            setAsm(allAssemblies[0]); // Set ASM for the first tab initially
-
-            setPreprocessed(response.data.preprocessed);
-            setLineMapping(allLineMappings[0]);
-            lineMappingRef.current = allLineMappings[0];
-
-            console.log("data: ", allLineMappings); // DEBUG ***
-            console.log("ASM FILES:", allAssemblies); // DEBUG ***
-
-            setWarnings(response.data.warnings || '');
-            console.log("'-Wall' Warnings: ", response.data.warnings);
+            const data = await compileCode(code);
+            const allAssemblies = data.assembly;
+            localStorage.setItem('asm_output', JSON.stringify(allAssemblies));
+            localStorage.setItem('line_mapping', JSON.stringify(data.line_mapping));
+            setAsm(allAssemblies[0]);
+            setPreprocessed(data.preprocessed);
+            setWarnings(data.warnings || '');
+            lineMappingRef.current = data.line_mapping[0];
         } catch (err) {
             const stderr = err?.response?.data?.stderr;
             setError(stderr || "Compilation failed. Please check your code.");
             setWarnings('');
         }
-        setLoading(false);
     };
 
+    const handleSaveNotification = () => setRefreshFilesystem(prev => !prev);
+
+    const handleFileDoubleClick = async (fileData) => {
+        try {
+            const result = await loadSavedFile(fileData.id);
+            setCode(result.file_content || '');
+            setFileName(result.file_name);
+        } catch {
+            setError("Failed to load file. Please try again.");
+        }
+    };
 
     const handleCEditorMount = (editor) => {
         cEditorRef.current = editor;
-
         editor.onDidChangeCursorPosition((e) => {
             const currentLine = e.position.lineNumber.toString();
-            console.log("Current C code line:", currentLine); // DEBUG ***
-            const asmLines = lineMappingRef.current[currentLine];
-            console.log("Mapped ASM lines:", asmLines); // DEBUG ***
+
+            // Use current line mapping ref
+            const mapping = lineMappingRef.current || {};
+            const asmLines = mapping[currentLine];
+
+            // DEBUG ***
+            console.log("Line selected: " + currentLine);
+            console.log("ASM lines: " + asmLines);
+            // END DEBUG ***
 
             if (asmEditorRef.current) {
-                // Clear previous decorations
                 asmDecorationsRef.current = asmEditorRef.current.deltaDecorations(
                     asmDecorationsRef.current,
                     asmLines ? asmLines.map(line => ({
@@ -116,11 +83,11 @@ function App() {
                             startLineNumber: line,
                             endLineNumber: line,
                             startColumn: 1,
-                            endColumn: 1
+                            endColumn: 1,
                         },
                         options: {
                             isWholeLine: true,
-                            className: 'highlight-line'
+                            className: 'highlight-line',
                         }
                     })) : []
                 );
@@ -130,10 +97,12 @@ function App() {
 
     const handleTabChange = (index) => {
         setSelectedTab(index);
+
         const allAssemblies = JSON.parse(localStorage.getItem('asm_output'));
-        if (allAssemblies && allAssemblies[index]) {
-            setAsm(allAssemblies[index]); // Update ASM content for the selected tab
-        }
+        const allLineMappings = JSON.parse(localStorage.getItem('line_mapping'));
+
+        if (allAssemblies?.[index]) setAsm(allAssemblies[index]);
+        if (allLineMappings?.[index]) lineMappingRef.current = allLineMappings[index];
     };
 
 
@@ -141,75 +110,37 @@ function App() {
         <div className="container">
             <Navbar />
             <h1 className="title">CFlow</h1>
-            <div className="filename-input">
-                <input
-                    type="text"
-                    placeholder="Enter file name"
-                    value={fileName}
-                    onChange={(e) => setFileName(e.target.value)}
-                />
-            </div>
+
+            <input
+                type="text"
+                className="filename-input"
+                placeholder="Enter file name"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+            />
+
             <div className="editor-container">
-                <Editor
-                    className="editor"
-                    height="300px"
-                    defaultLanguage="c"
-                    onMount={handleCEditorMount}
-                    value={code}
-                    onChange={(value) => {
-                        setCode(value);
-                        localStorage.setItem('c_code', value);
-                    }}
-                />
-                <div className="asm-tabs">
-                    <div className="tabs">
-                        {[0, 1, 2, 3].map((index) => (
-                            <button
-                                key={index}
-                                className={selectedTab === index ? 'tab-selected' : 'tab'}
-                                onClick={() => handleTabChange(index)}
-                            >
-                                Tab {index + 1}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <EditorSection code={code} setCode={setCode} onMount={handleCEditorMount} />
+                <div className="asm-tabs"><TabButtons selectedTab={selectedTab} setSelectedTab={handleTabChange} /></div>
                 <Editor
                     className="editor"
                     height="300px"
                     defaultLanguage="cpp"
                     value={asm}
                     options={{ readOnly: true }}
-                    onMount={(editor) => asmEditorRef.current = editor}
+                    onMount={(editor) => (asmEditorRef.current = editor)}
                 />
             </div>
-            <button className="compile-button" onClick={handleCompile} disabled={loading}>
-                {loading ? "Compiling..." : "Compile"}
-            </button>
-            <SaveFile
-                selectedFolder={selectedFolder}
-                code={code}
-                fileName={fileName}
-                handleSaveNotification={handleSaveNotification}
-            />
-            {warnings && (
-                <div className="warning-output">
-                    <h3 className="subtitle">Compiler Warnings:</h3>
-                    <pre className="output">{warnings}</pre>
-                </div>
-            )}
-            {error && (
-                <div className="error-output">
-                    <h3 className="subtitle">Compilation Error:</h3>
-                    <pre className="output">{error}</pre>
-                </div>
-            )}
-            {user && <FileSystemExplorer
-                selectedFolder={selectedFolder}
-                onFolderSelect={setSelectedFolder}
-                refreshTrigger={refreshFilesystem}
-                onFileDoubleClick={handleFileDoubleClick}
-            />}
+
+            <button className="compile-button" onClick={handleCompile}>Compile</button>
+
+            <SaveFile selectedFolder={selectedFolder} code={code} fileName={fileName} handleSaveNotification={handleSaveNotification} />
+
+            {warnings && <WarningOutput warnings={warnings} />}
+            {error && <ErrorOutput error={error} />}
+
+            {user && <FileSystemExplorer selectedFolder={selectedFolder} onFolderSelect={setSelectedFolder} refreshTrigger={refreshFilesystem} onFileDoubleClick={handleFileDoubleClick} />}
+
             <h2 className="subtitle">Assembly Output:</h2>
             <pre className="output">{asm}</pre>
             <h2 className="subtitle">Preprocessed Code:</h2>
@@ -218,4 +149,3 @@ function App() {
     );
 }
 
-export default App;
