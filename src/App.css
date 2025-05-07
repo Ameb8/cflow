@@ -1,18 +1,20 @@
-/* App.css */
-
-body {
+html, body {
   margin: 0;
-  background-color: #f9f9f9;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 0;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
 }
 
 .container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .title {
@@ -21,10 +23,29 @@ body {
   color: #333;
 }
 
+.editor-container {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  margin-top: 1rem;
+  min-height: 400px;
+  max-height: 600px;
+}
+
+.editor-container .editor {
+  flex: 1;
+  height: 100% !important;
+  min-height: 0;
+}
+
 .editor {
   border: 1px solid #ccc;
   border-radius: 5px;
   overflow: hidden;
+}
+
+.monaco-editor, .monaco-editor .overflow-guard {
+  height: 100% !important;
 }
 
 .compile-button {
@@ -69,15 +90,6 @@ body {
   overflow-x: auto;
 }
 
-
-.editor-container {
-  display: flex;
-  gap: 1rem;
-}
-
-.editor-container .editor {
-  flex: 1;
-}
 
 .highlight-line {
   background-color: rgba(255, 255, 0, 0.3); /* light yellow */

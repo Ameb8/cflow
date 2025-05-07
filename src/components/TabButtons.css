@@ -1,0 +1,35 @@
+.tabs {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 1rem;
+}
+
+.tab-label {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+button.tab,
+button.tab-selected {
+    padding: 0.6rem 1.2rem;
+    margin-right: 0.5rem;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+button.tab:hover {
+    background-color: #eaeaea;
+}
+
+button.tab-selected {
+    background-color: #d0eaff;
+    border-color: #3399ff;
+    font-weight: bold;
+}

@@ -1,13 +1,18 @@
+import './TabButtons.css';
+
 export function TabButtons({ selectedTab, setSelectedTab }) {
+    const tabNames = ['Base', 'O1', 'O2', 'O3']
+
     return (
         <div className="tabs">
-            {[0, 1, 2, 3].map((index) => (
+            <label className="tab-label">Optimization Level:</label>
+            {tabNames.map((name, index) => (
                 <button
                     key={index}
                     className={selectedTab === index ? 'tab-selected' : 'tab'}
                     onClick={() => setSelectedTab(index)}
                 >
-                    Tab {index + 1}
+                    {name}
                 </button>
             ))}
         </div>

@@ -1,4 +1,8 @@
+import "./App.css"
+
 import { useState, useRef } from 'react';
+import Editor from "@monaco-editor/react";
+
 import { useEditorSync } from './hooks/useEditorSync';
 import { compileCode } from './utils/compileCode';
 import { loadSavedFile } from './utils/loadSavedFile';
@@ -10,8 +14,7 @@ import Navbar from './components/Navbar.jsx';
 import FileSystemExplorer from './components/FileSystemExplorer.jsx';
 import SaveFile from './components/SaveFile.jsx';
 import { useAuth } from './context/AuthContext.jsx';
-import Editor from "@monaco-editor/react";
-import "./App.css"
+
 
 export default function App() {
     const [code, setCode] = useState('');
@@ -124,7 +127,6 @@ export default function App() {
                 <div className="asm-tabs"><TabButtons selectedTab={selectedTab} setSelectedTab={handleTabChange} /></div>
                 <Editor
                     className="editor"
-                    height="300px"
                     defaultLanguage="cpp"
                     value={asm}
                     options={{ readOnly: true }}
@@ -141,8 +143,6 @@ export default function App() {
 
             {user && <FileSystemExplorer selectedFolder={selectedFolder} onFolderSelect={setSelectedFolder} refreshTrigger={refreshFilesystem} onFileDoubleClick={handleFileDoubleClick} />}
 
-            <h2 className="subtitle">Assembly Output:</h2>
-            <pre className="output">{asm}</pre>
             <h2 className="subtitle">Preprocessed Code:</h2>
             <pre className="output">{preprocessed}</pre>
         </div>

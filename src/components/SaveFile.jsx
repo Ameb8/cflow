@@ -1,5 +1,5 @@
 import React from 'react';
-import csrfAxios from '../../utility/csrfAxios.js';
+import csrfAxios from '../utils/csrfAxios.js';
 
 const SaveFile = ({ selectedFolder, code, fileName, handleSaveNotification }) => {
     const handleSave = async () => {

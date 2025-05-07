@@ -1,7 +1,7 @@
 import { createContext, useState, useContext } from "react";
 import axios from "axios";
 import Cookies from 'js-cookie';
-import csrfAxios from "../../utility/csrfAxios.js";
+import csrfAxios from "../utils/csrfAxios.js";
 
 const AuthContext = createContext();
 
