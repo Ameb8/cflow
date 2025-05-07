@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from './AuthContext.jsx';
-import csrfAxios from './csrfAxios';
+import { useAuth } from '../context/AuthContext.jsx';
+import csrfAxios from '../../utility/csrfAxios.js';
 import './FileSystemExplorer.css';
 
 const File = ({ file, extension, onDoubleClick }) => {
