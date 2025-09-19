@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: webenv_db
+    env_file:
+      - .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - backend_network
+
+  backend:
+    build:
+      context: ./cflow_backend
+    container_name: webenv_server
+    command: >
+      ./scripts/wait-on-db.sh db 3306 -- python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    volumes:
+      - ./cflow_backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+
+volumes:
+  mysql_data:
