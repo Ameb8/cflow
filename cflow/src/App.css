@@ -1,0 +1,124 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  padding-top: 80px;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.editor-container {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  margin-top: 1rem;
+  min-height: 400px;
+  max-height: 900px;
+}
+
+.editor-container .editor {
+  flex: 1;
+  height: 100% !important;
+  min-height: 0;
+}
+
+.editor {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.monaco-editor, .monaco-editor .overflow-guard {
+  height: 100% !important;
+}
+
+.compile-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.compile-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.compile-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d9534f;
+  margin-top: 0.5rem;
+}
+
+.subtitle {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.output {
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-radius: 5px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.95rem;
+  overflow-x: auto;
+}
+
+
+.highlight-line {
+  background-color: rgba(255, 255, 0, 0.3); /* light yellow */
+}
+
+.error-output {
+  background-color: #2e2e2e;
+  color: #ff5555;
+  padding: 1em;
+  border-radius: 8px;
+  margin-top: 1em;
+  white-space: pre-wrap;
+}
+
+
+.warning-output {
+  background-color: #2e2e2e;
+  color: #ffa500;
+  padding: 1em;
+  border-radius: 8px;
+  margin-top: 1em;
+  white-space: pre-wrap;
+}
+
+.right-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+
